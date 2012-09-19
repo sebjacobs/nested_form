@@ -14,7 +14,7 @@ jQuery(function($) {
 
       // Make the context correct by replacing new_<parents> with the generated ID
       // of each of the parent objects
-      var context = ($(link).closest('.fields').closestChild('input, textarea').eq(0).attr('name') || '').replace(new RegExp('\[[a-z]+\]$'), '');
+      var context = ($(link).closest('.fields .add_nested_form').closestChild('input, textarea').eq(0).attr('name') || '').replace(new RegExp('\[[a-z]+\]$'), '');
 
       // context will be something like this for a brand new form:
       // project[tasks_attributes][new_1255929127459][assignments_attributes][new_1255929128105]
@@ -55,13 +55,13 @@ jQuery(function($) {
     removeFields: function(e) {
       var $link = $(e.currentTarget),
           assoc = $link.data('association'); // Name of child to be removed
-      
+
       var hiddenField = $link.prev('input[type=hidden]');
       hiddenField.val('1');
-      
+
       var field = $link.closest('.fields');
       field.hide();
-      
+
       field
         .trigger({ type: 'nested:fieldRemoved', field: field })
         .trigger({ type: 'nested:fieldRemoved:' + assoc, field: field });
