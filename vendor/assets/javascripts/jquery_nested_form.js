@@ -50,7 +50,7 @@ jQuery(function($) {
       return false;
     },
     insertFields: function(content, assoc, link) {
-      return $(content).insertBefore(link);
+      return $(content).insertBefore($(link).parent());
     },
     removeFields: function(e) {
       var $link = $(e.currentTarget),
