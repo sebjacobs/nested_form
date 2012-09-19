@@ -15,21 +15,24 @@ module NestedForm
       options = args.extract_options!.symbolize_keys
       association = args.pop
 
+      polymorphic_association = options.delete(:polymorphic_assocation) || association
+
       unless (reflection = object.class.reflect_on_association(association))
         raise ArgumentError, "Failed to find #{object.class.name} association by name \"#{association}\""
       end
-      model_object = reflection.klass.new
+      model_object = options.delete(:model_object) || reflection.klass.new
 
       options[:class] = [options[:class], "add_nested_fields"].compact.join(" ")
       options["data-association"] = association
+      options["data-polymorphic-association"] = polymorphic_association
       options["data-blueprint-id"] = fields_blueprint_id = fields_blueprint_id_for(association)
       args << (options.delete(:href) || "javascript:void(0)")
       args << options
-      
+
       @fields ||= {}
       @template.after_nested_form(fields_blueprint_id) do
         blueprint = {:id => fields_blueprint_id, :style => 'display: none'}
-        blueprint[:"data-blueprint"] = fields_for(association, model_object, :child_index => "new_#{association}", &@fields[fields_blueprint_id]).to_str
+        blueprint[:"data-blueprint"] = fields_for(polymorphic_association, model_object, :child_index => "new_#{association}", &@fields[fields_blueprint_id]).to_str
         @template.content_tag(:div, nil, blueprint)
       end
       @template.link_to(*args, &block)
@@ -49,12 +52,12 @@ module NestedForm
     def link_to_remove(*args, &block)
       options = args.extract_options!.symbolize_keys
       options[:class] = [options[:class], "remove_nested_fields"].compact.join(" ")
-      
+
       # Extracting "milestones" from "...[milestones_attributes][...]"
       md = object_name.to_s.match /(\w+)_attributes\]\[[\w\d]+\]$/
       association = md && md[1]
       options["data-association"] = association
-      
+
       args << (options.delete(:href) || "javascript:void(0)")
       args << options
       (hidden_field(:_destroy) << @template.link_to(*args, &block)).html_safe
